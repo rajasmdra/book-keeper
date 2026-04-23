@@ -9,23 +9,32 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const mongoURI = process.env.MONGO_URI;
-
-if (!mongoURI) {
-    console.error("ERROR: Variabel MONGO_URI tidak ditemukan di file .env!");
-    process.exit(1); // Matikan aplikasi jika URI tidak ada
-}
-
 // CONNECT TO MONGODB
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("Connected to MongoDB!"))
     .catch((err) => console.error("Failed to connect:", err));
 
 // CREATE TABLE
+
+const categorySchema = new mongoose.Schema({
+    category: String
+});
+const Category = mongoose.model("Category", categorySchema);
+
+const publisherSchema = new mongoose.Schema({
+    publisher: String
+});
+const Publisher = mongoose.model("Publisher", publisherSchema);
+
 const bookSchema = new mongoose.Schema({
     title: String,
+    category_id: { type: mongoose.Schema.Types.ObjectId, ref: "Category"},
     author: String,
-    year: Number
+    publisher_id: { type: mongoose.Schema.Types.ObjectId, ref: "Publisher"},
+    year: Number,
+    page: Number,
+    description: String,
+    imagelink: String
 });
 const Book = mongoose.model("Book", bookSchema);
 
@@ -38,8 +47,28 @@ const Note = mongoose.model("Note", noteSchema);
 // GET ALL BOOKS
 app.get('/books', async (req, res) => {
     try {
-        const books = await Book.find();
+        const books = await Book.find().populate('category_id').populate('publisher_id');
         res.status(200).json({ books: books });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
+
+// GET ALL CATEGORY
+app.get('/categories', async (req, res) => {
+    try {
+        const categories = await Category.find();
+        res.status(200).json({ categories });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
+
+// GET ALL PUBLISHER
+app.get('/publishers', async (req, res) => {
+    try {
+        const publishers = await Publisher.find();
+        res.status(200).json({ publishers });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -58,29 +87,40 @@ app.get('/books/:id', async (req, res) => {
     }
 })
 
-// POST NEW BOOK
-app.post('/books', async (req, res) => {
+// POST NEW CATEGORY
+app.post('/categories', async (req, res) => {
     try {
-        const { title, author, year } = req.body;
-        const newBook = new Book({ title, author, year });
-        const savedBook = await newBook.save();
+        const { category } = req.body;
+        const newCategory = new Category({ category });
+        const savedCategory = await newCategory.save();
     
-        res.status(201).json({ bookId: savedBook._id });
+        res.status(201).json({ categoryId: savedCategory._id });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 })
 
-// POST NEW NOTE
-app.post('/books/:id/notes', async (req, res) => {
+// POST NEW PUBLISHER
+app.post('/publishers', async (req, res) => {
     try {
-        const { id } = req.params;
-        const { content } = req.body;
+        const { publisher } = req.body;
+        const newPublisher = new Publisher({ publisher });
+        const savedPublisher = await newPublisher.save();
     
-        const newNote = new Note({ book_id: id, content });
-        const savedNote = await newNote.save();
+        res.status(201).json({ publisherId: savedPublisher._id });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
+
+// POST NEW BOOK
+app.post('/books', async (req, res) => {
+    try {
+        const { title, category_id, author, publisher_id, year, page, description, imagelink } = req.body;
+        const newBook = new Book({ title, category_id, author, publisher_id, year, page, description, imagelink });
+        const savedBook = await newBook.save();
     
-        res.status(201).json({ noteId: savedNote._id});
+        res.status(201).json({ bookId: savedBook._id });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -99,7 +139,54 @@ app.delete('/books/:id',  async (req, res) => {
             deletedBookId: id 
         });
     } catch (error) {
-        res,status(400).json({ error: error.message });
+        res.status(400).json({ error: error.message });
+    }
+})
+
+// DELETE CATEGORY
+app.delete('/categories/:id',  async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await Category.findByIdAndDelete(id);
+        
+        res.status(200).json({ 
+            message: "Kategori dihapus", 
+            deletedCategoryId: id 
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
+
+// DELETE PUBLISHER
+app.delete('/publishers/:id',  async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await Publisher.findByIdAndDelete(id);
+        
+        res.status(200).json({ 
+            message: "Penerbit dihapus", 
+            deletedPublisherId: id 
+        });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
+
+// POST NEW NOTE
+app.post('/books/:id/notes', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { content } = req.body;
+    
+        const newNote = new Note({ book_id: id, content });
+        const savedNote = await newNote.save();
+    
+        res.status(201).json({ noteId: savedNote._id});
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     }
 })
 
