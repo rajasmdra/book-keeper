@@ -67,7 +67,7 @@ app.get('/categories', async (req, res) => {
 // GET ALL PUBLISHER
 app.get('/publishers', async (req, res) => {
     try {
-        const publishers = await Publisher.find();
+        const publishers = await Publisher.find().populate('category_id').populate('publisher_id');
         res.status(200).json({ publishers });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -78,7 +78,7 @@ app.get('/publishers', async (req, res) => {
 app.get('/books/:id', async (req, res) => {
     try {
         const { id }  = req.params;
-        const book = await Book.findById(id);
+        const book = await Book.findById(id).populate('category_id').populate('publisher_id');
         const notes = await Note.find({ book_id: id});
     
         res.status(200).json({ book, notes });
