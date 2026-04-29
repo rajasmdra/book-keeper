@@ -67,7 +67,7 @@ app.get('/categories', async (req, res) => {
 // GET ALL PUBLISHER
 app.get('/publishers', async (req, res) => {
     try {
-        const publishers = await Publisher.find().populate('category_id').populate('publisher_id');
+        const publishers = await Publisher.find()
         res.status(200).json({ publishers });
     } catch (error) {
         res.status(500).json({ error: error.message });

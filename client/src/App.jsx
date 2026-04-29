@@ -5,6 +5,7 @@ import './App.css'
 import { Home } from './Page/Home';
 import { Books } from './Page/Books';
 import { Book } from './Page/Book';
+import { Add } from './Page/Add'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path='/' element={<Home />}/>
             <Route path='/books' element={<Books />}/>
+            <Route path='/add' element={<Add />}/>
             <Route path="/books/:id" element={<Book />} />
           </Routes>
         </div>

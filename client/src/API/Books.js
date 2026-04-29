@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
 
 export const fetchBooks = async () => {
     try {
@@ -17,6 +16,16 @@ export const fetchBook = async (id) => {
         return response.data.book;
     } catch (error) {
         console.error(`Gagal mengambil data buku dengan id ${id}`, error);
+        throw error;
+    }
+}
+
+export const addBook = async (bookData) => {
+    try {
+        const response = await axios.post(' http://localhost:3000/books', bookData);
+        return response.data;
+    } catch (error) {
+        console.error("Gagal menambha buku:", error);
         throw error;
     }
 }

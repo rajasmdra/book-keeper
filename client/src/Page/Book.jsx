@@ -22,10 +22,9 @@ export const Book = () => {
         loadBook();
     }, [id]);
 
-
     return (
         <div className="flex flex-col gap-8">
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
                 <img src={book?.imagelink} alt="" width="120"/>
                 <div className="flex flex-col justify-between flex-1">
                     <h1 className="text-3xl font-bold">{book?.title}</h1>
@@ -60,6 +59,5 @@ export const Book = () => {
                 <p>{book?.description}</p>
             </div>
         </div>
-
     )
 }
